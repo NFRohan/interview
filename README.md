@@ -255,7 +255,7 @@ from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
-    model="gpt-4",  # or "gpt-3.5-turbo", "gpt-4-turbo", etc.
+    model="gpt-5",  # or "gpt-5", "gpt-5-mini", etc.
     temperature=0.1,
 )
 ```
@@ -282,7 +282,7 @@ from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1",
-    model="anthropic/claude-3.5-sonnet",  # or other available models
+    model="anthropic/claude-sonnet-4.5",  # or other available models
     temperature=0.1,
     extra_headers={
         "HTTP-Referer": "https://your-site.com",  # Optional
@@ -305,7 +305,7 @@ openai>=1.0.0
 - `gpt-4o` - Capable last gen multimodal model
 
 #### **OpenRouter Models**
-- `anthropic/claude-4.5-sonnet` - Excellent for coding
+- `anthropic/claude-sonnet-4.5` - Excellent for coding
 - `meta-llama/llama-3.1-70b-instruct` - Open source, good performance
 - `google/gemini-2.5-pro` - Google's model via OpenRouter
 - `z-ai/glm-4.6` - Open source, top of oss benchmarks
