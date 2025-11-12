@@ -221,8 +221,223 @@ ls -la solutions/
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
 | `GEMINI_API_KEY` | ✅ | Google Gemini API key | `AIza...` |
+| `OPENAI_API_KEY` | ➖ | OpenAI API key (if using OpenAI) | `sk-...` |
+| `OPENROUTER_API_KEY` | ➖ | OpenRouter API key (if using OpenRouter) | `sk-or-...` |
 | `PYTHONUNBUFFERED` | ➖ | Disable Python buffering | `1` |
 | `PYTHONDONTWRITEBYTECODE` | ➖ | Don't create .pyc files | `1` |
+
+## 🤖 AI Provider Configuration
+
+The application supports multiple AI providers. By default, it uses Google Gemini, but you can easily switch to OpenAI or OpenRouter.
+
+### **Current Default (Gemini)**
+```python
+# In main.py - Current configuration
+llm = ChatOpenAI(
+    api_key=os.getenv("GEMINI_API_KEY"),
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+    model="gemini-2.5-flash",
+)
+```
+
+### **Switch to OpenAI**
+
+#### **1. Update Environment**
+```bash
+# In .env file
+OPENAI_API_KEY=sk-your-openai-api-key-here
+```
+
+#### **2. Modify main.py**
+```python
+# Replace the LLM configuration in main.py
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    model="gpt-4",  # or "gpt-3.5-turbo", "gpt-4-turbo", etc.
+    temperature=0.1,
+)
+```
+
+#### **3. Update Requirements**
+```bash
+# Add to requirements.txt (if not already present)
+openai>=1.0.0
+```
+
+### **Switch to OpenRouter**
+
+#### **1. Update Environment**
+```bash
+# In .env file
+OPENROUTER_API_KEY=sk-or-your-openrouter-api-key-here
+```
+
+#### **2. Modify main.py**
+```python
+# Replace the LLM configuration in main.py
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1",
+    model="anthropic/claude-3.5-sonnet",  # or other available models
+    temperature=0.1,
+    extra_headers={
+        "HTTP-Referer": "https://your-site.com",  # Optional
+        "X-Title": "JSON AI Code Generator",      # Optional
+    }
+)
+```
+
+#### **3. Update Requirements**
+```bash
+# Add to requirements.txt (if not already present)
+openai>=1.0.0
+```
+
+### **Popular Model Options**
+
+#### **OpenAI Models**
+- `gpt-4` - Most capable, higher cost
+- `gpt-4-turbo` - Fast and capable
+- `gpt-3.5-turbo` - Balanced cost/performance
+- `gpt-4o` - Latest multimodal model
+
+#### **OpenRouter Models**
+- `anthropic/claude-3.5-sonnet` - Excellent for coding
+- `meta-llama/llama-3.1-70b-instruct` - Open source, good performance
+- `google/gemini-pro-1.5` - Google's model via OpenRouter
+- `openai/gpt-4` - OpenAI models via OpenRouter
+- `mistralai/mixtral-8x7b-instruct` - Good balance of speed/quality
+
+### **Configuration Examples**
+
+#### **Multi-Provider Setup**
+```python
+# main.py - Support multiple providers
+import os
+from langchain_openai import ChatOpenAI
+
+def get_llm_provider():
+    """Select LLM provider based on available API keys"""
+    if os.getenv("OPENAI_API_KEY"):
+        return ChatOpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            model="gpt-4",
+            temperature=0.1,
+        )
+    elif os.getenv("OPENROUTER_API_KEY"):
+        return ChatOpenAI(
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1",
+            model="anthropic/claude-3.5-sonnet",
+            temperature=0.1,
+        )
+    elif os.getenv("GEMINI_API_KEY"):
+        return ChatOpenAI(
+            api_key=os.getenv("GEMINI_API_KEY"),
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+            model="gemini-2.5-flash",
+        )
+    else:
+        raise ValueError("No API key found. Please set one of: OPENAI_API_KEY, OPENROUTER_API_KEY, GEMINI_API_KEY")
+
+# Use the function
+llm = get_llm_provider()
+```
+
+#### **Environment-Based Selection**
+```bash
+# .env file - Set your preferred provider
+AI_PROVIDER=openai
+OPENAI_API_KEY=sk-your-key-here
+
+# Or
+AI_PROVIDER=openrouter
+OPENROUTER_API_KEY=sk-or-your-key-here
+
+# Or
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your-key-here
+```
+
+```python
+# main.py - Environment-based selection
+import os
+from langchain_openai import ChatOpenAI
+
+def create_llm():
+    provider = os.getenv("AI_PROVIDER", "gemini").lower()
+    
+    if provider == "openai":
+        return ChatOpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            model=os.getenv("OPENAI_MODEL", "gpt-4"),
+            temperature=float(os.getenv("AI_TEMPERATURE", "0.1")),
+        )
+    elif provider == "openrouter":
+        return ChatOpenAI(
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1",
+            model=os.getenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet"),
+            temperature=float(os.getenv("AI_TEMPERATURE", "0.1")),
+        )
+    elif provider == "gemini":
+        return ChatOpenAI(
+            api_key=os.getenv("GEMINI_API_KEY"),
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+            model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+        )
+    else:
+        raise ValueError(f"Unsupported AI provider: {provider}")
+
+llm = create_llm()
+```
+
+### **Rate Limiting by Provider**
+
+Different providers have different rate limits. You may need to adjust the delays:
+
+```python
+# In main.py, adjust these values based on your provider:
+
+# For OpenAI (adjust based on your tier)
+retry_delay = 60      # Longer delay for OpenAI
+time.sleep(10)        # Shorter delay between problems
+
+# For OpenRouter (varies by model)
+retry_delay = 30      # Standard delay
+time.sleep(15)        # Medium delay between problems
+
+# For Gemini (current default)
+retry_delay = 30      # Standard delay
+time.sleep(20)        # Longer delay between problems
+```
+
+### **Cost Considerations**
+
+| Provider | Model | Cost (approx) | Speed | Quality |
+|----------|-------|----------------|--------|---------|
+| **OpenAI** | gpt-4 | $$$ | Medium | Excellent |
+| **OpenAI** | gpt-3.5-turbo | $ | Fast | Good |
+| **OpenRouter** | claude-3.5-sonnet | $$ | Medium | Excellent |
+| **OpenRouter** | llama-3.1-70b | $ | Fast | Good |
+| **Gemini** | gemini-2.5-flash | $ | Fast | Good |
+
+### **Deployment with Different Providers**
+
+After modifying the configuration:
+
+```bash
+# Rebuild and deploy with new AI provider
+docker build -t json-processor:latest .
+docker-compose up -d
+
+# Monitor logs to ensure new provider works
+docker-compose logs -f
+```
 
 ### **JSON Input Format**
 
