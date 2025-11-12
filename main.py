@@ -19,8 +19,18 @@ llm = ChatOpenAI(
 # --- No embeddings needed for this ---
 
 # --- MODIFICATION ---
-# Updated prompt to ask for input() instead of sys.argv
-prompt = """Your task is to generate a Python solution for the given problem. The solution must read its input from the terminal using the input() function. Your response must contain *only* the Python code. Do not provide any text before or after the code. Do not add explanations, examples, or any markdown like ```python."""
+# Updated prompt to be more specific about input handling
+prompt = """Your task is to generate a Python solution for the given problem. 
+
+IMPORTANT REQUIREMENTS:
+1. Use input() to read from terminal
+2. Handle both integers and floating-point numbers appropriately - use int() for integers, float() for numbers that might have decimals
+3. Your response must contain ONLY the Python code
+4. No explanations, comments, examples, or markdown
+5. No text before or after the code
+6. No reasoning or thought process
+
+Generate clean, executable Python code only."""
 # --- END MODIFICATION ---
 
 # --- No agent needed for this ---
@@ -32,6 +42,55 @@ def validate_solution(actual_output: str, expected_output: str) -> bool:
     Strips leading/trailing whitespace for a more robust comparison.
     """
     return actual_output.strip() == expected_output.strip()
+
+
+def clean_ai_response(response: str) -> str:
+    """
+    Cleans AI response to extract only Python code.
+    Removes thought sections, markdown blocks, and explanations.
+    """
+    import re
+    
+    # Remove thought sections (case insensitive)
+    response = re.sub(r'<\s*/?thought\s*>.*?</\s*thought\s*>', '', response, flags=re.IGNORECASE | re.DOTALL)
+    response = re.sub(r'<\s*/?THOUGHT\s*>.*?</\s*THOUGHT\s*>', '', response, flags=re.IGNORECASE | re.DOTALL)
+    
+    # Remove markdown code blocks
+    response = response.replace("```python", "").replace("```", "")
+    
+    # Split into lines and filter out non-code lines
+    lines = response.strip().split('\n')
+    code_lines = []
+    
+    for line in lines:
+        stripped = line.strip()
+        
+        # Skip empty lines at the beginning
+        if not code_lines and not stripped:
+            continue
+            
+        # Skip obvious explanation lines
+        if (stripped.startswith(('The ', 'This ', 'I ', 'We ', 'Here', 'First', 'Then', 'Finally')) and 
+            not stripped.startswith(('The ', 'This ')) or 
+            stripped.lower().startswith(('steps:', 'solution:', 'explanation:', 'note:', 'approach:'))):
+            continue
+            
+        # Skip lines that look like comments but aren't Python comments
+        if (stripped and not stripped.startswith('#') and 
+            any(word in stripped.lower() for word in ['step', 'first', 'then', 'next', 'finally', 'solution', 'approach'])):
+            # But include if it contains Python syntax
+            if not any(char in stripped for char in ['=', '(', ')', '[', ']', ':', 'def ', 'if ', 'for ', 'while ', 'import ', 'print']):
+                continue
+        
+        code_lines.append(line)
+    
+    # Join the filtered lines
+    clean_code = '\n'.join(code_lines).strip()
+    
+    # Final cleanup - remove any remaining XML-like tags
+    clean_code = re.sub(r'<[^>]+>', '', clean_code)
+    
+    return clean_code
 
 
 def main():
@@ -90,9 +149,8 @@ def main():
         if code_response is None:
             continue
         
-        # The clean_code logic is still a good safeguard
-        clean_code = code_response.strip().replace(
-            "```python", "").replace("```", "").strip()
+        # Enhanced code cleaning to remove thoughts and extract only Python code
+        clean_code = clean_ai_response(code_response)
 
         # --- ADDED CODE ---
         print(f"--- Generated Code for Solution {i+1} ---")
