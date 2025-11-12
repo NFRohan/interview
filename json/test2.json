@@ -1,0 +1,5 @@
+{
+  "query": "Write a Python program that reads a number and prints 'POSITIVE' if it's positive, 'NEGATIVE' if it's negative, and 'ZERO' if it's zero.",
+  "test_input": -5.0,
+  "test_output": "NEGATIVE"
+}

@@ -1,0 +1,5 @@
+{
+  "query": "Write a Python program that reads an integer and prints 'YES' if it's even, 'NO' if it's odd.",
+  "test_input": 7,
+  "test_output": "NO"
+}

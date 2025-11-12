@@ -1,0 +1,30 @@
+# Ignore virtual environment
+.venv/
+venv/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore .env files - API keys should be passed as environment variables
+.env
+
+# Ignore output directories
+solutions/
+
+# Ignore git files
+.git/
+.gitignore
+
+# Ignore documentation and deployment scripts
+README.md
+deploy.ps1
+deploy.sh
+Makefile
+
+# Ignore IDE files
+.vscode/
+*.swp
+*.swo

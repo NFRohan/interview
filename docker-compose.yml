@@ -1,0 +1,55 @@
+services:
+  json-processor:
+    build: 
+      context: .
+      dockerfile: dockerfile
+    image: json-processor:latest
+    container_name: json-processor-prod
+    volumes:
+      # Mount JSON files directory (read-only for security)
+      - type: bind
+        source: ./json
+        target: /app/json
+        read_only: true
+      # Mount solutions directory for outputs
+      - type: bind
+        source: ./solutions
+        target: /app/solutions
+    environment:
+      # Production environment variables
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    # Default command with json path
+    command: ["/app/json"]
+    # Restart only on failure, not after successful completion
+    restart: on-failure
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    # Read-only root filesystem for security
+    read_only: true
+    tmpfs:
+      - /tmp
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
