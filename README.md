@@ -300,16 +300,15 @@ openai>=1.0.0
 ### **Popular Model Options**
 
 #### **OpenAI Models**
-- `gpt-4` - Most capable, higher cost
-- `gpt-4-turbo` - Fast and capable
-- `gpt-3.5-turbo` - Balanced cost/performance
-- `gpt-4o` - Latest multimodal model
+- `gpt-5` - Most capable, higher cost
+- `gpt-5-mini` - Fast, small and capable
+- `gpt-4o` - Capable last gen multimodal model
 
 #### **OpenRouter Models**
-- `anthropic/claude-3.5-sonnet` - Excellent for coding
+- `anthropic/claude-4.5-sonnet` - Excellent for coding
 - `meta-llama/llama-3.1-70b-instruct` - Open source, good performance
-- `google/gemini-pro-1.5` - Google's model via OpenRouter
-- `openai/gpt-4` - OpenAI models via OpenRouter
+- `google/gemini-2.5-pro` - Google's model via OpenRouter
+- `z-ai/glm-4.6` - Open source, top of oss benchmarks
 - `mistralai/mixtral-8x7b-instruct` - Good balance of speed/quality
 
 ### **Configuration Examples**
@@ -325,14 +324,14 @@ def get_llm_provider():
     if os.getenv("OPENAI_API_KEY"):
         return ChatOpenAI(
             api_key=os.getenv("OPENAI_API_KEY"),
-            model="gpt-4",
+            model="gpt-5",
             temperature=0.1,
         )
     elif os.getenv("OPENROUTER_API_KEY"):
         return ChatOpenAI(
             api_key=os.getenv("OPENROUTER_API_KEY"),
             base_url="https://openrouter.ai/api/v1",
-            model="anthropic/claude-3.5-sonnet",
+            model="z-ai/glm-4.6",
             temperature=0.1,
         )
     elif os.getenv("GEMINI_API_KEY"):
@@ -374,14 +373,14 @@ def create_llm():
     if provider == "openai":
         return ChatOpenAI(
             api_key=os.getenv("OPENAI_API_KEY"),
-            model=os.getenv("OPENAI_MODEL", "gpt-4"),
+            model=os.getenv("OPENAI_MODEL", "gpt-5"),
             temperature=float(os.getenv("AI_TEMPERATURE", "0.1")),
         )
     elif provider == "openrouter":
         return ChatOpenAI(
             api_key=os.getenv("OPENROUTER_API_KEY"),
             base_url="https://openrouter.ai/api/v1",
-            model=os.getenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet"),
+            model=os.getenv("OPENROUTER_MODEL", "z-ai/glm-4.6"),
             temperature=float(os.getenv("AI_TEMPERATURE", "0.1")),
         )
     elif provider == "gemini":
@@ -420,9 +419,9 @@ time.sleep(20)        # Longer delay between problems
 
 | Provider | Model | Cost (approx) | Speed | Quality |
 |----------|-------|----------------|--------|---------|
-| **OpenAI** | gpt-4 | $$$ | Medium | Excellent |
-| **OpenAI** | gpt-3.5-turbo | $ | Fast | Good |
-| **OpenRouter** | claude-3.5-sonnet | $$ | Medium | Excellent |
+| **OpenAI** | gpt-5 | $$$ | Medium | Excellent |
+| **OpenAI** | gpt-5-mini | $ | Fast | Good |
+| **OpenRouter** | claude-4.5-sonnet | $$ | Medium | Excellent |
 | **OpenRouter** | llama-3.1-70b | $ | Fast | Good |
 | **Gemini** | gemini-2.5-flash | $ | Fast | Good |
 
